@@ -625,6 +625,10 @@
     </div>
 
     <script>
+        // Default booking endpoint for Vercel serverless function
+        // When deployed to Vercel, the function will be available at /api/booking
+        window.BOOKING_ENDPOINT = window.BOOKING_ENDPOINT || '/api/booking';
+
         // Smooth scrolling container setup
         // We'll keep the page's native scrollbar, but render the content inside
         // a fixed container and translate it using a lerped value for smoothness.
