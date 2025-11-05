@@ -419,7 +419,7 @@
 
             let current = 0;
             let target = window.scrollY;
-            const ease = 0.09; // lower = smoother/slower
+            const ease = 0.045; // Reduced from 0.09 to make it slower and smoother
 
             window.addEventListener('resize', setBodyHeight);
             window.addEventListener('scroll', () => { target = window.scrollY; }, { passive: true });
