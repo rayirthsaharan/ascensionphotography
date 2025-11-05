@@ -13,6 +13,150 @@
             padding: 0;
             box-sizing: border-box;
         }
+
+            /* Modal Styles */
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                z-index: 1001;
+                align-items: center;
+                justify-content: center;
+                backdrop-filter: blur(5px);
+            }
+
+            .modal.active {
+                display: flex;
+            }
+
+            .modal-content {
+                background: #fff;
+                padding: 40px;
+                max-width: 500px;
+                width: 90%;
+                position: relative;
+                border-radius: 4px;
+            }
+
+            .close-modal {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                font-size: 24px;
+                cursor: pointer;
+                color: #666;
+                transition: color 0.3s;
+            }
+
+            .close-modal:hover {
+                color: #000;
+            }
+
+            .modal h2 {
+                font-family: 'Montserrat', sans-serif;
+                font-size: 24px;
+                font-weight: 300;
+                margin-bottom: 30px;
+                letter-spacing: 1px;
+            }
+
+            /* Form Styles */
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-family: 'Montserrat', sans-serif;
+                font-size: 14px;
+                color: #333;
+            }
+
+            .form-group input,
+            .form-group select {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-family: inherit;
+                font-size: 16px;
+            }
+
+            .form-group input:focus,
+            .form-group select:focus {
+                outline: none;
+                border-color: #000;
+            }
+
+            /* Calendar Styles */
+            .calendar {
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 15px;
+            }
+
+            .calendar-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+
+            .calendar-grid {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 5px;
+                text-align: center;
+            }
+
+            .calendar-day {
+                padding: 10px;
+                cursor: pointer;
+                border-radius: 4px;
+                transition: background-color 0.3s;
+            }
+
+            .calendar-day:hover:not(.disabled) {
+                background-color: #f0f0f0;
+            }
+
+            .calendar-day.selected {
+                background-color: #000;
+                color: #fff;
+            }
+
+            .calendar-day.disabled {
+                color: #ccc;
+                cursor: not-allowed;
+            }
+
+            .calendar-day.weekend:not(.disabled) {
+                color: #000;
+                font-weight: 500;
+            }
+
+            .submit-btn {
+                width: 100%;
+                padding: 15px;
+                background: #000;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                font-family: 'Montserrat', sans-serif;
+                font-size: 16px;
+                cursor: pointer;
+                transition: opacity 0.3s;
+            }
+
+            .submit-btn:hover {
+                opacity: 0.8;
+            }
         
         .schedule-btn {
             position: fixed;
@@ -360,11 +504,46 @@
     </style>
 </head>
 <body>
-    <!-- Calendly link widget begin -->
-    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
-    <button class="schedule-btn" onclick="openCalendly()">SCHEDULE</button>
-    <!-- Calendly link widget end -->
+        <button class="schedule-btn" onclick="openBookingModal()">SCHEDULE</button>
+    
+        <!-- Custom Booking Modal -->
+        <div id="bookingModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeBookingModal()">&times;</span>
+                <h2>Schedule a Shoot</h2>
+                <form id="bookingForm" onsubmit="submitBooking(event)">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookingDate">Select Date</label>
+                        <div id="calendar" class="calendar"></div>
+                        <input type="hidden" id="bookingDate" name="bookingDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookingTime">Select Time</label>
+                        <select id="bookingTime" name="bookingTime" required>
+                            <option value="">Choose a time...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventType">Event Type</label>
+                        <select id="eventType" name="eventType" required>
+                            <option value="">Select event type...</option>
+                            <option value="Car Photography">Car Photography</option>
+                            <option value="Car Show">Car Show</option>
+                            <option value="Custom Shoot">Custom Shoot</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="submit-btn">Book Session</button>
+                </form>
+            </div>
+        </div>
 
     <div id="smooth-wrapper">
     <header>
@@ -545,16 +724,150 @@
         // Keep header fade updated on the animation loop as well
         setInterval(updateHeaderFade, 60);
 
-        // Calendly Popup Integration
-        function openCalendly() {
-            Calendly.initPopupWidget({
-                url: 'https://calendly.com/ascensionphotography12',
-                color: '#000000',
-                text: 'Schedule time with me',
-                branding: false
+            // Booking Modal Functions
+            function openBookingModal() {
+                document.getElementById('bookingModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+                renderCalendar();
+            }
+
+            function closeBookingModal() {
+                document.getElementById('bookingModal').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            // Calendar Functions
+            function renderCalendar() {
+                const calendar = document.getElementById('calendar');
+                const today = new Date();
+                const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+                const calendarHTML = `
+                    <div class="calendar-header">
+                        <button onclick="previousMonth()">&lt;</button>
+                        <h3>${currentMonth.toLocaleString('default', { month: 'long' })} ${currentMonth.getFullYear()}</h3>
+                        <button onclick="nextMonth()">&gt;</button>
+                    </div>
+                    <div class="calendar-grid">
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                        <div>Sat</div>
+                        ${generateDays(currentMonth)}
+                    </div>
+                `;
+            
+                calendar.innerHTML = calendarHTML;
+                updateTimeSlots();
+            }
+
+            function generateDays(month) {
+                const firstDay = month.getDay();
+                const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+                const today = new Date();
+                let days = '';
+
+                // Add empty cells for days before the first day of the month
+                for (let i = 0; i < firstDay; i++) {
+                    days += '<div></div>';
+                }
+
+                // Add the days of the month
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const date = new Date(month.getFullYear(), month.getMonth(), i);
+                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                    const isPast = date < today;
+                    const isSelected = document.getElementById('bookingDate').value === date.toISOString().split('T')[0];
+                
+                    const classes = [
+                        'calendar-day',
+                        isWeekend ? 'weekend' : '',
+                        isPast ? 'disabled' : '',
+                        isSelected ? 'selected' : ''
+                    ].filter(Boolean).join(' ');
+
+                    days += `<div class="${classes}" onclick="${!isPast && isWeekend ? `selectDate('${date.toISOString().split('T')[0]}')` : ''}">${i}</div>`;
+                }
+
+                return days;
+            }
+
+            function selectDate(date) {
+                document.getElementById('bookingDate').value = date;
+                renderCalendar();
+                updateTimeSlots();
+            }
+
+            function previousMonth() {
+                const currentMonth = new Date(document.querySelector('.calendar-header h3').textContent);
+                currentMonth.setMonth(currentMonth.getMonth() - 1);
+                renderCalendar(currentMonth);
+            }
+
+            function nextMonth() {
+                const currentMonth = new Date(document.querySelector('.calendar-header h3').textContent);
+                currentMonth.setMonth(currentMonth.getMonth() + 1);
+                renderCalendar(currentMonth);
+            }
+
+            function updateTimeSlots() {
+                const timeSelect = document.getElementById('bookingTime');
+                const selectedDate = document.getElementById('bookingDate').value;
+            
+                // Clear existing options
+                timeSelect.innerHTML = '<option value="">Choose a time...</option>';
+            
+                if (!selectedDate) return;
+
+                // Generate time slots from 10 AM to 5 PM
+                for (let hour = 10; hour <= 17; hour++) {
+                    const time = `${hour.toString().padStart(2, '0')}:00`;
+                    const option = document.createElement('option');
+                    option.value = time;
+                    option.textContent = time;
+                    timeSelect.appendChild(option);
+                }
+            }
+
+            function submitBooking(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const bookingDetails = {
+                    name: formData.get('name'),
+                    phone: formData.get('phone'),
+                    date: formData.get('bookingDate'),
+                    time: formData.get('bookingTime'),
+                    eventType: formData.get('eventType')
+                };
+
+                // Email template
+                const emailBody = `
+                    New Booking Request:
+                    Name: ${bookingDetails.name}
+                    Phone: ${bookingDetails.phone}
+                    Date: ${bookingDetails.date}
+                    Time: ${bookingDetails.time}
+                    Event Type: ${bookingDetails.eventType}
+                `;
+
+                // Open default email client with pre-filled details
+                const mailtoLink = `mailto:ascensionphotography12@gmail.com?subject=New Booking Request&body=${encodeURIComponent(emailBody)}`;
+                window.location.href = mailtoLink;
+
+                // Reset form and close modal
+                event.target.reset();
+                closeBookingModal();
+            }
+
+            // Close modal if clicking outside
+            document.getElementById('bookingModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeBookingModal();
+                }
             });
-            return false;
-        }
     </script>
 </body>
 </html>
