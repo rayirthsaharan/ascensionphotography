@@ -146,7 +146,7 @@
             display: flex;
             flex-direction: column;
             gap: 100px;
-            margin: 100px auto;
+            margin: 60px auto;
             max-width: 1600px;
             padding: 0 40px;
         }
@@ -248,7 +248,8 @@
             border-top: 1px solid #e0e0e0;
             padding: 40px;
             text-align: center;
-            margin-top: 80px;
+            margin-top: 40px;
+            margin-bottom: 0;
         }
 
         .footer-content {
@@ -257,6 +258,7 @@
             align-items: center;
             gap: 30px;
             flex-wrap: wrap;
+            padding-bottom: 20px;
         }
 
         .footer-link {
@@ -409,7 +411,8 @@
             if (!smoothContent) return;
 
             const setBodyHeight = () => {
-                document.body.style.height = Math.max(smoothContent.getBoundingClientRect().height, window.innerHeight) + 'px';
+                const contentHeight = smoothContent.getBoundingClientRect().height;
+                document.body.style.height = contentHeight + 'px';
             };
 
             let current = 0;
