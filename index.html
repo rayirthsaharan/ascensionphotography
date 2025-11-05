@@ -529,6 +529,10 @@
                         <input type="tel" id="phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890" required>
                     </div>
                     <div class="form-group">
+                        <label for="userEmail">Your Email</label>
+                        <input type="email" id="userEmail" name="userEmail" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
                         <label for="bookingDate">Select Date</label>
                         <div id="calendar" class="calendar"></div>
                         <input type="hidden" id="bookingDate" name="bookingDate" required>
@@ -847,6 +851,7 @@
                 const bookingDetails = {
                     name: formData.get('name'),
                     phone: formData.get('phone'),
+                    email: formData.get('userEmail'),
                     date: formData.get('bookingDate'),
                     time: formData.get('bookingTime'),
                     eventType: formData.get('eventType')
@@ -857,45 +862,55 @@
 `New Booking Request:\nName: ${bookingDetails.name}\nPhone: ${bookingDetails.phone}\nDate: ${bookingDetails.date}\nTime: ${bookingDetails.time}\nEvent Type: ${bookingDetails.eventType}`;
 
                 const subject = 'New Booking Request';
-                const mailtoLink = `mailto:ascensionphotography12@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
 
-                // Try to open the user's email client. Some browsers/OS setups don't have a default mail client,
-                // so also copy the booking details to clipboard and show instructions as a fallback.
-                try {
-                    // Prefer opening in same tab location to trigger mail client
-                    window.location.href = mailtoLink;
-                } catch (e) {
-                    // ignore
-                }
+                // If a server endpoint is provided, POST the booking to it. This allows automatic server-side
+                // emailing without relying on the user's mail client. You can set `window.BOOKING_ENDPOINT` elsewhere.
+                const endpoint = window.BOOKING_ENDPOINT || null;
 
-                // After attempting to open mail client, also copy fallback text to clipboard
                 const fallbackText = `To: ascensionphotography12@gmail.com\nSubject: ${subject}\n\n${emailBody}`;
 
                 const copyAndNotify = () => {
                     if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(fallbackText).then(() => {
-                            alert('Booking details copied to clipboard. If your email client did not open, paste the details into an email to ascensionphotography12@gmail.com and send.');
-                        }).catch(() => {
-                            alert('Could not copy booking details to clipboard. Please email ascensionphotography12@gmail.com with your booking details.');
+                        return navigator.clipboard.writeText(fallbackText).then(() => {
+                            alert('Booking details copied to clipboard. Please paste into an email to ascensionphotography12@gmail.com and send.');
                         });
                     } else {
-                        // Fallback copy method
                         const ta = document.createElement('textarea');
                         ta.value = fallbackText;
                         document.body.appendChild(ta);
                         ta.select();
                         try {
                             document.execCommand('copy');
-                            alert('Booking details copied to clipboard. If your email client did not open, paste the details into an email to ascensionphotography12@gmail.com and send.');
+                            alert('Booking details copied to clipboard. Please paste into an email to ascensionphotography12@gmail.com and send.');
                         } catch (err) {
                             alert('Please email ascensionphotography12@gmail.com with your booking details:\n\n' + fallbackText);
                         }
                         ta.remove();
+                        return Promise.resolve();
                     }
                 };
 
-                // Run fallback copy after a short delay to give mailto a chance to open
-                setTimeout(copyAndNotify, 600);
+                if (endpoint) {
+                    // Try server-side send
+                    fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bookingDetails)
+                    }).then(resp => {
+                        if (resp.ok) {
+                            alert('Booking sent — we will contact you at ' + bookingDetails.email + '. Thank you!');
+                        } else {
+                            // fallback
+                            copyAndNotify();
+                        }
+                    }).catch(err => {
+                        // fallback
+                        copyAndNotify();
+                    });
+                } else {
+                    // No endpoint configured: copy to clipboard as a fallback
+                    copyAndNotify();
+                }
 
                 // Reset form and close modal
                 event.target.reset();
