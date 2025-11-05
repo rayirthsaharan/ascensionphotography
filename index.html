@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ascension Photography</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #fff;
+            color: #000;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body * {
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                        opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(60px) scale(0.95);
+            transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .parallax {
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        header {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            animation: fadeIn 1.2s ease 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .tagline {
+            font-size: 18px;
+            color: #666;
+            font-weight: 300;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            animation: fadeIn 1.2s ease 0.6s both;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            animation: fadeIn 1.2s ease 0.9s both;
+        }
+
+        .contact-link {
+            color: #000;
+            text-decoration: none;
+            font-size: 16px;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .contact-link:hover {
+            opacity: 0.6;
+        }
+
+        .instagram-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        main {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 40px 100px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 20px;
+            margin-bottom: 80px;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+        }
+
+        .gallery-item.span-10 {
+            grid-column: span 10;
+        }
+
+        .gallery-item.span-4 {
+            grid-column: span 4;
+        }
+
+        .gallery-item.span-6 {
+            grid-column: span 6;
+        }
+
+        .gallery-item.span-7 {
+            grid-column: span 7;
+        }
+
+        .gallery-item.span-8 {
+            grid-column: span 8;
+        }
+
+        .gallery-item.offset-5 {
+            grid-column: 5 / span 8;
+        }
+
+        .gallery-item.offset-6 {
+            grid-column: 6 / span 7;
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.03);
+        }
+
+        .item-details {
+            padding: 0 10px;
+        }
+
+        .item-title {
+            font-size: 18px;
+            font-weight: 300;
+            margin-bottom: 8px;
+        }
+
+        .item-year {
+            font-size: 13px;
+            color: #999;
+            margin-left: 15px;
+        }
+
+        .item-description {
+            font-size: 14px;
+            color: #666;
+            font-weight: 300;
+            line-height: 1.5;
+        }
+
+        .contact-section {
+            max-width: 800px;
+            margin: 100px auto;
+            padding: 0 40px;
+            text-align: center;
+        }
+
+        .contact-section h2 {
+            font-size: 36px;
+            font-weight: 300;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+        }
+
+        .contact-details {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .contact-item {
+            font-size: 18px;
+            color: #000;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .contact-item:hover {
+            opacity: 0.6;
+        }
+
+        footer {
+            border-top: 1px solid #e0e0e0;
+            padding: 40px;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .footer-link:hover {
+            color: #000;
+        }
+
+        .separator {
+            color: #ccc;
+        }
+
+        .copyright {
+            color: #999;
+            font-size: 13px;
+        }
+
+        @media (max-width: 968px) {
+            main {
+                padding: 0 20px 60px;
+            }
+
+            h1 {
+                font-size: 36px;
+            }
+
+            .gallery {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .gallery-item.span-10,
+            .gallery-item.span-4,
+            .gallery-item.span-7,
+            .gallery-item.offset-3,
+            .gallery-item.offset-9,
+            .gallery-item.offset-1 {
+                grid-column: span 1;
+            }
+
+            .contact-section {
+                margin: 60px auto;
+                padding: 0 20px;
+            }
+
+            .contact-section h2 {
+                font-size: 28px;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .separator {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="webImages/logo.jpg" alt="Ascension Photography Logo">
+        </div>
+        <h1>Ascension Photography</h1>
+        <p class="tagline">Capturing automotive excellence through visual storytelling</p>
+        <div class="contact-info">
+            <a href="tel:+16292795150" class="contact-link">+1 (629) - 279 - 5150</a>
+            <a href="https://www.instagram.com/asencion.photography/" target="_blank" rel="noopener noreferrer" class="contact-link">
+                <svg class="instagram-icon" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                Instagram
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="gallery">
+            <!-- Left aligned -->
+            <article class="gallery-item span-8 fade-in">
+                <div class="image-container">
+                    <img src="webImages/redPic.jpg" alt="Red Car" loading="lazy">
+                </div>
+            </article>
+
+            <!-- Right aligned -->
+            <article class="gallery-item span-7 offset-6 fade-in">
+                <div class="image-container">
+                    <img src="webImages/grayPic.jpg" alt="Gray Car" loading="lazy">
+                </div>
+            </article>
+
+            <!-- Left aligned -->
+            <article class="gallery-item span-6 fade-in">
+                <div class="image-container">
+                    <img src="webImages/purplePic.jpg" alt="Purple Car" loading="lazy">
+                </div>
+            </article>
+
+            <!-- Right aligned -->
+            <article class="gallery-item span-8 offset-5 fade-in">
+                <div class="image-container">
+                    <img src="webImages/trunkPic.jpg" alt="Trunk Detail" loading="lazy">
+                </div>
+            </article>
+        </div>
+
+        <section class="contact-section fade-in">
+            <h2>Get in Touch</h2>
+            <div class="contact-details">
+                <a href="tel:+16292795150" class="contact-item">+1 (629) - 279 - 5150</a>
+                <a href="https://www.instagram.com/asencion.photography/" target="_blank" rel="noopener noreferrer" class="contact-item">
+                    <svg class="instagram-icon" fill="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 8px;">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    @asencion.photography
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <a href="https://www.instagram.com/asencion.photography/" target="_blank" rel="noopener noreferrer" class="footer-link">Instagram</a>
+            <span class="separator">•</span>
+            <span class="copyright">© 2025 Ascension Photography</span>
+        </div>
+    </footer>
+
+    <script>
+        // Ultra smooth scroll animations
+        let ticking = false;
+        let lastScrollY = window.scrollY;
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -80px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 100);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Parallax scroll effect
+        function updateParallax() {
+            const scrolled = window.scrollY;
+            const direction = scrolled > lastScrollY ? 'down' : 'up';
+            
+            document.querySelectorAll('.gallery-item').forEach((item, index) => {
+                const rect = item.getBoundingClientRect();
+                const scrollPercent = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+                
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    const speed = (index % 2 === 0) ? 20 : 30;
+                    const yPos = -(scrollPercent - 0.5) * speed;
+                    item.style.transform = `translateY(${yPos}px)`;
+                }
+            });
+
+            lastScrollY = scrolled;
+            ticking = false;
+        }
+
+        // Smooth scroll on mouse wheel
+        function smoothScroll(e) {
+            if (!ticking) {
+                window.requestAnimationFrame(updateParallax);
+                ticking = true;
+            }
+        }
+
+        // Add smooth momentum scrolling
+        let isScrolling;
+        window.addEventListener('scroll', () => {
+            window.clearTimeout(isScrolling);
+            smoothScroll();
+            
+            isScrolling = setTimeout(() => {
+                document.body.style.pointerEvents = 'auto';
+            }, 100);
+        }, { passive: true });
+
+        // Smooth scroll to anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Initial parallax update
+        updateParallax();
+
+        // Smooth header fade on scroll
+        const header = document.querySelector('header');
+        let lastScroll = 0;
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.scrollY;
+            
+            if (currentScroll > 100) {
+                header.style.opacity = Math.max(0.3, 1 - (currentScroll / 800));
+            } else {
+                header.style.opacity = '1';
+            }
+        });
+    </script>
+</body>
+</html>
