@@ -329,6 +329,7 @@
     </style>
 </head>
 <body>
+    <div id="smooth-content">
     <header>
         <div class="logo">
             <img src="webImages/logo.jpg" alt="Ascension Photography Logo">
@@ -397,13 +398,46 @@
             <span class="copyright">© 2025 Ascension Photography</span>
         </div>
     </footer>
+    </div>
 
     <script>
-        // Ultra smooth scroll animations
-        let ticking = false;
-        let lastScrollY = window.scrollY;
+        // Smooth scrolling container setup
+        // We'll keep the page's native scrollbar, but render the content inside
+        // a fixed container and translate it using a lerped value for smoothness.
 
-        // Intersection Observer for fade-in animations
+        const smoothContent = document.getElementById('smooth-content');
+
+        // Expose a global smoothed scroll value for other effects (parallax, header fade)
+        window.smoothScrollY = 0;
+
+        (function initSmoothScroll() {
+            if (!smoothContent) return;
+
+            const setBodyHeight = () => {
+                document.body.style.height = Math.max(smoothContent.getBoundingClientRect().height, window.innerHeight) + 'px';
+            };
+
+            let current = 0;
+            let target = window.scrollY;
+            const ease = 0.09; // lower = smoother/slower
+
+            window.addEventListener('resize', setBodyHeight);
+            window.addEventListener('scroll', () => { target = window.scrollY; }, { passive: true });
+
+            const raf = () => {
+                current += (target - current) * ease;
+                // small threshold to avoid tiny transforms
+                if (Math.abs(target - current) < 0.01) current = target;
+                smoothContent.style.transform = `translateY(${-current}px)`;
+                window.smoothScrollY = current;
+                requestAnimationFrame(raf);
+            };
+
+            setBodyHeight();
+            requestAnimationFrame(raf);
+        })();
+
+        // Intersection Observer for fade-in animations (unchanged behavior)
         const observerOptions = {
             threshold: 0.15,
             rootMargin: '0px 0px -80px 0px'
@@ -423,18 +457,22 @@
             observer.observe(el);
         });
 
-        // Parallax scroll effect
+        // Parallax scroll effect (use the smoothed scroll value)
+        let ticking = false;
+        let lastScrollY = 0;
+
         function updateParallax() {
-            const scrolled = window.scrollY;
+            const scrolled = window.smoothScrollY || window.scrollY;
             const direction = scrolled > lastScrollY ? 'down' : 'up';
-            
+
             document.querySelectorAll('.gallery-item').forEach((item, index) => {
                 const rect = item.getBoundingClientRect();
                 const scrollPercent = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
-                
+
                 if (rect.top < window.innerHeight && rect.bottom > 0) {
                     const speed = (index % 2 === 0) ? 20 : 30;
                     const yPos = -(scrollPercent - 0.5) * speed;
+                    // combine parallax with the container transform
                     item.style.transform = `translateY(${yPos}px)`;
                 }
             });
@@ -443,55 +481,35 @@
             ticking = false;
         }
 
-        // Smooth scroll on mouse wheel
-        function smoothScroll(e) {
+        function requestParallaxUpdate() {
             if (!ticking) {
                 window.requestAnimationFrame(updateParallax);
                 ticking = true;
             }
         }
 
-        // Add smooth momentum scrolling
-        let isScrolling;
+        // Use scroll event to trigger parallax updates (reads from smoothed value)
         window.addEventListener('scroll', () => {
-            window.clearTimeout(isScrolling);
-            smoothScroll();
-            
-            isScrolling = setTimeout(() => {
-                document.body.style.pointerEvents = 'auto';
-            }, 100);
+            requestParallaxUpdate();
         }, { passive: true });
 
-        // Smooth scroll to anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-
         // Initial parallax update
-        updateParallax();
+        requestParallaxUpdate();
 
-        // Smooth header fade on scroll
-        const header = document.querySelector('header');
-        let lastScroll = 0;
+        // Smooth header fade on scroll (use smoothed value)
+        const headerEl = document.querySelector('header');
 
-        window.addEventListener('scroll', () => {
-            const currentScroll = window.scrollY;
-            
+        function updateHeaderFade() {
+            const currentScroll = window.smoothScrollY || window.scrollY;
             if (currentScroll > 100) {
-                header.style.opacity = Math.max(0.3, 1 - (currentScroll / 800));
+                headerEl.style.opacity = Math.max(0.3, 1 - (currentScroll / 800));
             } else {
-                header.style.opacity = '1';
+                headerEl.style.opacity = '1';
             }
-        });
+        }
+
+        // Keep header fade updated on the animation loop as well
+        setInterval(updateHeaderFade, 60);
     </script>
 </body>
 </html>
