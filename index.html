@@ -35,106 +35,12 @@
             color: #fff;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1001;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #fff;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            position: relative;
-            border-radius: 4px;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #666;
-            transition: color 0.3s;
-        }
-
-        .close-modal:hover {
-            color: #000;
-        }
-
-        .booking-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-group label {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .form-group input,
-        .form-group select {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 16px;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #000;
-        }
-
-        .submit-btn {
-            background: #000;
-            color: #fff;
-            padding: 15px;
-            border: none;
-            border-radius: 4px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 16px;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
-
-        .submit-btn:hover {
-            opacity: 0.8;
-        }
-
         @media (max-width: 768px) {
             .schedule-btn {
                 top: 10px;
                 right: 10px;
                 padding: 8px 16px;
                 font-size: 12px;
-            }
-            
-            .modal-content {
-                padding: 20px;
             }
         }
 
@@ -454,42 +360,10 @@
     </style>
 </head>
 <body>
-    <button class="schedule-btn" onclick="openModal()">SCHEDULE</button>
+    <button class="schedule-btn" onclick="Calendly.initPopup({url: 'https://calendly.com/ascensionphotos3'})">SCHEDULE</button>
     
-    <div class="modal" id="bookingModal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h2 style="font-family: 'Montserrat', sans-serif; margin-bottom: 30px; font-weight: 300;">Schedule a Shoot</h2>
-            <form class="booking-form" id="bookingForm" onsubmit="submitBooking(event)">
-                <div class="form-group">
-                    <label for="name">Name</label>
-                    <input type="text" id="name" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="date">Date</label>
-                    <input type="date" id="date" name="date" required>
-                </div>
-                <div class="form-group">
-                    <label for="time">Time</label>
-                    <input type="time" id="time" name="time" required>
-                </div>
-                <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890" required>
-                </div>
-                <div class="form-group">
-                    <label for="eventType">Event Type</label>
-                    <select id="eventType" name="eventType" required>
-                        <option value="">Select event type...</option>
-                        <option value="Car Photography">Car Photography</option>
-                        <option value="Car Show">Car Show</option>
-                        <option value="Custom Shoot">Custom Shoot</option>
-                    </select>
-                </div>
-                <button type="submit" class="submit-btn">Book Session</button>
-            </form>
-        </div>
-    </div>
+    <!-- Calendly integration -->
+    <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
 
     <div id="smooth-wrapper">
     <header>
@@ -670,76 +544,12 @@
         // Keep header fade updated on the animation loop as well
         setInterval(updateHeaderFade, 60);
 
-        // Booking Modal Functions
-        function openModal() {
-            document.getElementById('bookingModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            document.getElementById('bookingModal').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // Handle form submission
-        async function submitBooking(event) {
-            event.preventDefault();
-            const form = event.target;
-            const formData = new FormData(form);
-            
-            // Get form values
-            const name = formData.get('name');
-            const date = formData.get('date');
-            const time = formData.get('time');
-            const phone = formData.get('phone');
-            const eventType = formData.get('eventType');
-
-            // Format datetime for Google Calendar
-            const dateTime = new Date(date + 'T' + time);
-            const endDateTime = new Date(dateTime.getTime() + (2 * 60 * 60 * 1000)); // 2 hours duration
-
-            // Create calendar event
-            const event = {
-                'summary': `${eventType} - ${name}`,
-                'description': `Client: ${name}\nPhone: ${phone}\nEvent Type: ${eventType}`,
-                'start': {
-                    'dateTime': dateTime.toISOString(),
-                    'timeZone': 'America/Chicago'
-                },
-                'end': {
-                    'dateTime': endDateTime.toISOString(),
-                    'timeZone': 'America/Chicago'
-                }
-            };
-
-            try {
-                // Send booking request to your server endpoint
-                const response = await fetch('YOUR_BACKEND_ENDPOINT', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(event)
-                });
-
-                if (response.ok) {
-                    alert('Booking request submitted successfully! We will contact you to confirm.');
-                    form.reset();
-                    closeModal();
-                } else {
-                    throw new Error('Booking request failed');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('There was an error submitting your booking. Please try again or contact us directly.');
-            }
-        }
-
-        // Close modal if clicking outside
-        document.getElementById('bookingModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
+        // Initialize Calendly widget color to match site theme
+        Calendly.initInlineWidget({
+            url: 'https://calendly.com/ascensionphotos3',
+            parentElement: document.createElement('div'), // This is just for initialization
+            prefill: {},
+            utm: {}
         });
     </script>
 </body>
