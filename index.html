@@ -501,6 +501,14 @@
                 display: none;
             }
         }
+        /* Smooth scroll wrapper: fix in place and translate its contents for lerped scrolling */
+        #smooth-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            will-change: transform;
+        }
     </style>
 </head>
 <body>
@@ -617,7 +625,7 @@
         // We'll keep the page's native scrollbar, but render the content inside
         // a fixed container and translate it using a lerped value for smoothness.
 
-        const smoothContent = document.getElementById('smooth-content');
+        const smoothContent = document.getElementById('smooth-wrapper');
 
         // Expose a global smoothed scroll value for other effects (parallax, header fade)
         window.smoothScrollY = 0;
@@ -632,7 +640,7 @@
 
             let current = 0;
             let target = window.scrollY;
-            const ease = 0.045; // Reduced from 0.09 to make it slower and smoother
+            const ease = 0.035; // user-requested smooth speed
 
             window.addEventListener('resize', setBodyHeight);
             window.addEventListener('scroll', () => { target = window.scrollY; }, { passive: true });
@@ -646,6 +654,7 @@
                 requestAnimationFrame(raf);
             };
 
+            // initialize
             setBodyHeight();
             requestAnimationFrame(raf);
         })();
