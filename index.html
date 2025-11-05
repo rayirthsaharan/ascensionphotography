@@ -852,19 +852,50 @@
                     eventType: formData.get('eventType')
                 };
 
-                // Email template
-                const emailBody = `
-                    New Booking Request:
-                    Name: ${bookingDetails.name}
-                    Phone: ${bookingDetails.phone}
-                    Date: ${bookingDetails.date}
-                    Time: ${bookingDetails.time}
-                    Event Type: ${bookingDetails.eventType}
-                `;
+                // Clean email body without leading indentation
+                const emailBody =
+`New Booking Request:\nName: ${bookingDetails.name}\nPhone: ${bookingDetails.phone}\nDate: ${bookingDetails.date}\nTime: ${bookingDetails.time}\nEvent Type: ${bookingDetails.eventType}`;
 
-                // Open default email client with pre-filled details
-                const mailtoLink = `mailto:ascensionphotography12@gmail.com?subject=New Booking Request&body=${encodeURIComponent(emailBody)}`;
-                window.location.href = mailtoLink;
+                const subject = 'New Booking Request';
+                const mailtoLink = `mailto:ascensionphotography12@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+
+                // Try to open the user's email client. Some browsers/OS setups don't have a default mail client,
+                // so also copy the booking details to clipboard and show instructions as a fallback.
+                try {
+                    // Prefer opening in same tab location to trigger mail client
+                    window.location.href = mailtoLink;
+                } catch (e) {
+                    // ignore
+                }
+
+                // After attempting to open mail client, also copy fallback text to clipboard
+                const fallbackText = `To: ascensionphotography12@gmail.com\nSubject: ${subject}\n\n${emailBody}`;
+
+                const copyAndNotify = () => {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(fallbackText).then(() => {
+                            alert('Booking details copied to clipboard. If your email client did not open, paste the details into an email to ascensionphotography12@gmail.com and send.');
+                        }).catch(() => {
+                            alert('Could not copy booking details to clipboard. Please email ascensionphotography12@gmail.com with your booking details.');
+                        });
+                    } else {
+                        // Fallback copy method
+                        const ta = document.createElement('textarea');
+                        ta.value = fallbackText;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        try {
+                            document.execCommand('copy');
+                            alert('Booking details copied to clipboard. If your email client did not open, paste the details into an email to ascensionphotography12@gmail.com and send.');
+                        } catch (err) {
+                            alert('Please email ascensionphotography12@gmail.com with your booking details:\n\n' + fallbackText);
+                        }
+                        ta.remove();
+                    }
+                };
+
+                // Run fallback copy after a short delay to give mailto a chance to open
+                setTimeout(copyAndNotify, 600);
 
                 // Reset form and close modal
                 event.target.reset();
