@@ -888,12 +888,12 @@
                 // emailing without relying on the user's mail client. You can set `window.BOOKING_ENDPOINT` elsewhere.
                 const endpoint = window.BOOKING_ENDPOINT || null;
 
-                const fallbackText = `To: ascensionphotography12@gmail.com\nSubject: ${subject}\n\n${emailBody}`;
+                const fallbackText = `To: ascensionphotos12@gmail.com\nSubject: ${subject}\n\n${emailBody}`;
 
                 const copyAndNotify = () => {
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                         return navigator.clipboard.writeText(fallbackText).then(() => {
-                            alert('Booking details copied to clipboard. Please paste into an email to ascensionphotography12@gmail.com and send.');
+                            alert('Booking details copied to clipboard. Please paste into an email to ascensionphotos12@gmail.com and send.');
                         });
                     } else {
                         const ta = document.createElement('textarea');
@@ -902,9 +902,9 @@
                         ta.select();
                         try {
                             document.execCommand('copy');
-                            alert('Booking details copied to clipboard. Please paste into an email to ascensionphotography12@gmail.com and send.');
+                            alert('Booking details copied to clipboard. Please paste into an email to ascensionphotos12@gmail.com and send.');
                         } catch (err) {
-                            alert('Please email ascensionphotography12@gmail.com with your booking details:\n\n' + fallbackText);
+                            alert('Please email ascensionphotos12@gmail.com with your booking details:\n\n' + fallbackText);
                         }
                         ta.remove();
                         return Promise.resolve();

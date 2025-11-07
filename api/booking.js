@@ -3,7 +3,7 @@
 // Uses SendGrid to send an email. Configure the following environment variables in Vercel:
 // SENDGRID_API_KEY (required) - SendGrid API Key
 // SENDER_EMAIL (optional) - verified sender email (defaults to no-reply@your-domain.com)
-// RECIPIENT_EMAIL (optional) - where the booking email is sent (defaults to ascensionphotography12@gmail.com)
+// RECIPIENT_EMAIL (optional) - where the booking email is sent (defaults to ascensionphotos12@gmail.com)
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
     const SENDER_EMAIL = process.env.SENDER_EMAIL || `no-reply@your-domain.com`;
-    const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || 'ascensionphotography12@gmail.com';
+  const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || 'ascensionphotos12@gmail.com';
 
     if (!SENDGRID_API_KEY) {
       return res.status(500).json({ error: 'SendGrid API key not configured on the server' });
