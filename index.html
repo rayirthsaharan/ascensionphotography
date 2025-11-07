@@ -536,50 +536,11 @@
     </style>
 </head>
 <body>
-        <button class="schedule-btn" onclick="openBookingModal()">SCHEDULE</button>
-    
-        <!-- Custom Booking Modal -->
-        <div id="bookingModal" class="modal">
-            <div class="modal-content">
-                <span class="close-modal" onclick="closeBookingModal()">&times;</span>
-                <h2>Schedule a Shoot</h2>
-                <form id="bookingForm" onsubmit="submitBooking(event)">
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">Phone Number</label>
-                        <input type="tel" id="phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="userEmail">Your Email</label>
-                        <input type="email" id="userEmail" name="userEmail" placeholder="you@example.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="bookingDate">Select Date</label>
-                        <div id="calendar" class="calendar"></div>
-                        <input type="hidden" id="bookingDate" name="bookingDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="bookingTime">Select Time</label>
-                        <select id="bookingTime" name="bookingTime" required>
-                            <option value="">Choose a time...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="eventType">Event Type</label>
-                        <select id="eventType" name="eventType" required>
-                            <option value="">Select event type...</option>
-                            <option value="Car Photography">Car Photography</option>
-                            <option value="Car Show">Car Show</option>
-                            <option value="Custom Shoot">Custom Shoot</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="submit-btn">Book Session</button>
-                </form>
-            </div>
-        </div>
+    <!-- Calendly link widget begin -->
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+    <button class="schedule-btn" onclick="openCalendly()">SCHEDULE</button>
+    <!-- Calendly link widget end -->
 
     <div id="smooth-wrapper">
     <header>
@@ -758,192 +719,16 @@
         // Keep header fade updated on the animation loop as well
         setInterval(updateHeaderFade, 60);
 
-            // Booking Modal Functions
-            function openBookingModal() {
-                document.getElementById('bookingModal').classList.add('active');
-                document.body.style.overflow = 'hidden';
-                renderCalendar();
+            // Calendly Popup Integration
+            function openCalendly() {
+                Calendly.initPopupWidget({
+                    url: 'https://calendly.com/ascensionphotography12',
+                    color: '#000000',
+                    text: 'Schedule time with me',
+                    branding: false
+                });
+                return false;
             }
-
-            function closeBookingModal() {
-                document.getElementById('bookingModal').classList.remove('active');
-                document.body.style.overflow = '';
-            }
-
-            // Calendar Functions
-            function renderCalendar() {
-                const calendar = document.getElementById('calendar');
-                const today = new Date();
-                const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            
-                const calendarHTML = `
-                    <div class="calendar-header">
-                        <button onclick="previousMonth()">&lt;</button>
-                        <h3>${currentMonth.toLocaleString('default', { month: 'long' })} ${currentMonth.getFullYear()}</h3>
-                        <button onclick="nextMonth()">&gt;</button>
-                    </div>
-                    <div class="calendar-grid">
-                        <div>Sun</div>
-                        <div>Mon</div>
-                        <div>Tue</div>
-                        <div>Wed</div>
-                        <div>Thu</div>
-                        <div>Fri</div>
-                        <div>Sat</div>
-                        ${generateDays(currentMonth)}
-                    </div>
-                `;
-            
-                calendar.innerHTML = calendarHTML;
-                updateTimeSlots();
-            }
-
-            function generateDays(month) {
-                const firstDay = month.getDay();
-                const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-                const today = new Date();
-                let days = '';
-
-                // Add empty cells for days before the first day of the month
-                for (let i = 0; i < firstDay; i++) {
-                    days += '<div></div>';
-                }
-
-                // Add the days of the month
-                for (let i = 1; i <= daysInMonth; i++) {
-                    const date = new Date(month.getFullYear(), month.getMonth(), i);
-                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-                    const isPast = date < today;
-                    const isSelected = document.getElementById('bookingDate').value === date.toISOString().split('T')[0];
-                
-                    const classes = [
-                        'calendar-day',
-                        isWeekend ? 'weekend' : '',
-                        isPast ? 'disabled' : '',
-                        isSelected ? 'selected' : ''
-                    ].filter(Boolean).join(' ');
-
-                    days += `<div class="${classes}" onclick="${!isPast && isWeekend ? `selectDate('${date.toISOString().split('T')[0]}')` : ''}">${i}</div>`;
-                }
-
-                return days;
-            }
-
-            function selectDate(date) {
-                document.getElementById('bookingDate').value = date;
-                renderCalendar();
-                updateTimeSlots();
-            }
-
-            function previousMonth() {
-                const currentMonth = new Date(document.querySelector('.calendar-header h3').textContent);
-                currentMonth.setMonth(currentMonth.getMonth() - 1);
-                renderCalendar(currentMonth);
-            }
-
-            function nextMonth() {
-                const currentMonth = new Date(document.querySelector('.calendar-header h3').textContent);
-                currentMonth.setMonth(currentMonth.getMonth() + 1);
-                renderCalendar(currentMonth);
-            }
-
-            function updateTimeSlots() {
-                const timeSelect = document.getElementById('bookingTime');
-                const selectedDate = document.getElementById('bookingDate').value;
-            
-                // Clear existing options
-                timeSelect.innerHTML = '<option value="">Choose a time...</option>';
-            
-                if (!selectedDate) return;
-
-                // Generate time slots from 10 AM to 5 PM
-                for (let hour = 10; hour <= 17; hour++) {
-                    const time = `${hour.toString().padStart(2, '0')}:00`;
-                    const option = document.createElement('option');
-                    option.value = time;
-                    option.textContent = time;
-                    timeSelect.appendChild(option);
-                }
-            }
-
-            function submitBooking(event) {
-                event.preventDefault();
-                const formData = new FormData(event.target);
-                const bookingDetails = {
-                    name: formData.get('name'),
-                    phone: formData.get('phone'),
-                    email: formData.get('userEmail'),
-                    date: formData.get('bookingDate'),
-                    time: formData.get('bookingTime'),
-                    eventType: formData.get('eventType')
-                };
-
-                // Clean email body without leading indentation
-                const emailBody =
-`New Booking Request:\nName: ${bookingDetails.name}\nPhone: ${bookingDetails.phone}\nDate: ${bookingDetails.date}\nTime: ${bookingDetails.time}\nEvent Type: ${bookingDetails.eventType}`;
-
-                const subject = 'New Booking Request';
-
-                // If a server endpoint is provided, POST the booking to it. This allows automatic server-side
-                // emailing without relying on the user's mail client. You can set `window.BOOKING_ENDPOINT` elsewhere.
-                const endpoint = window.BOOKING_ENDPOINT || null;
-
-                const fallbackText = `To: ascensionphotos12@gmail.com\nSubject: ${subject}\n\n${emailBody}`;
-
-                const copyAndNotify = () => {
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        return navigator.clipboard.writeText(fallbackText).then(() => {
-                            alert('Booking details copied to clipboard. Please paste into an email to ascensionphotos12@gmail.com and send.');
-                        });
-                    } else {
-                        const ta = document.createElement('textarea');
-                        ta.value = fallbackText;
-                        document.body.appendChild(ta);
-                        ta.select();
-                        try {
-                            document.execCommand('copy');
-                            alert('Booking details copied to clipboard. Please paste into an email to ascensionphotos12@gmail.com and send.');
-                        } catch (err) {
-                            alert('Please email ascensionphotos12@gmail.com with your booking details:\n\n' + fallbackText);
-                        }
-                        ta.remove();
-                        return Promise.resolve();
-                    }
-                };
-
-                if (endpoint) {
-                    // Try server-side send
-                    fetch(endpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(bookingDetails)
-                    }).then(resp => {
-                        if (resp.ok) {
-                            alert('Booking sent — we will contact you at ' + bookingDetails.email + '. Thank you!');
-                        } else {
-                            // fallback
-                            copyAndNotify();
-                        }
-                    }).catch(err => {
-                        // fallback
-                        copyAndNotify();
-                    });
-                } else {
-                    // No endpoint configured: copy to clipboard as a fallback
-                    copyAndNotify();
-                }
-
-                // Reset form and close modal
-                event.target.reset();
-                closeBookingModal();
-            }
-
-            // Close modal if clicking outside
-            document.getElementById('bookingModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeBookingModal();
-                }
-            });
     </script>
 </body>
 </html>
