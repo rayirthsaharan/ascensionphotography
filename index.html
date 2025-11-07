@@ -9,6 +9,9 @@
     <!-- Preconnect Calendly assets to reduce first-click latency -->
     <link rel="preconnect" href="https://assets.calendly.com">
     <link rel="preconnect" href="https://calendly.com">
+    <!-- Preload Calendly resources to prioritize fetching early -->
+    <link rel="preload" as="style" href="https://assets.calendly.com/assets/external/widget.css">
+    <link rel="preload" as="script" href="https://assets.calendly.com/assets/external/widget.js">
     <!-- Eager-load Calendly CSS and JS so the widget is ready immediately on click -->
     <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
     <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
@@ -855,6 +858,69 @@
 
                 return false;
             }
+    </script>
+    <script>
+        // Aggressive idle-time prefetch to warm Calendly assets and inject them if necessary.
+        (function prefetchCalendlyOnIdle() {
+            if (!('requestIdleCallback' in window)) {
+                // fallback to setTimeout
+                window.requestIdleCallback = function (cb) { return setTimeout(cb, 1000); };
+            }
+
+            // Don't prefetch on very slow connections to avoid wasting bandwidth
+            try {
+                const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                if (conn && (conn.saveData || /2g|slow-2g/.test(conn.effectiveType || ''))) {
+                    return; // skip prefetch on slow connections or Save-Data
+                }
+            } catch (e) { /* ignore */ }
+
+            requestIdleCallback(async () => {
+                // If Calendly already available, nothing to do
+                if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') return;
+
+                const cssUrl = 'https://assets.calendly.com/assets/external/widget.css';
+                const jsUrl = 'https://assets.calendly.com/assets/external/widget.js';
+
+                // Try to fetch CSS and inject as inline style to avoid additional round trips when applying
+                try {
+                    const cssResp = await fetch(cssUrl, { mode: 'cors', cache: 'force-cache' });
+                    if (cssResp.ok) {
+                        const cssText = await cssResp.text();
+                        const style = document.createElement('style');
+                        style.setAttribute('data-calendly', 'prefetch');
+                        style.textContent = cssText;
+                        document.head.appendChild(style);
+                    }
+                } catch (e) {
+                    // ignore failures
+                }
+
+                // Fetch script and inject via blob to ensure it's available and executed quickly
+                try {
+                    const jsResp = await fetch(jsUrl, { mode: 'cors', cache: 'force-cache' });
+                    if (jsResp.ok) {
+                        const jsText = await jsResp.text();
+                        const blob = new Blob([jsText], { type: 'text/javascript' });
+                        const blobUrl = URL.createObjectURL(blob);
+                        const s = document.createElement('script');
+                        s.src = blobUrl;
+                        s.async = true;
+                        s.setAttribute('data-calendly', 'prefetch');
+                        s.onload = () => {
+                            // release blob URL after execution
+                            URL.revokeObjectURL(blobUrl);
+                        };
+                        s.onerror = () => {
+                            URL.revokeObjectURL(blobUrl);
+                        };
+                        document.body.appendChild(s);
+                    }
+                } catch (e) {
+                    // ignore fetch errors; the normal script include will still load
+                }
+            });
+        })();
     </script>
 </body>
 </html>
