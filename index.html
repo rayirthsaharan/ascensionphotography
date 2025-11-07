@@ -6,6 +6,9 @@
     <title>Ascension Photography</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Preconnect Calendly assets to reduce first-click latency -->
+    <link rel="preconnect" href="https://assets.calendly.com">
+    <link rel="preconnect" href="https://calendly.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
     <style>
         * {
@@ -158,7 +161,7 @@
                 opacity: 0.8;
             }
         
-        .schedule-btn {
+    .schedule-btn {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -213,6 +216,27 @@
                 font-size: 13px;
                 border-radius: 22px;
             }
+        }
+
+        /* small spinner for loading Calendly */
+        .schedule-btn .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.35);
+            border-top-color: #fff;
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+        }
+
+        .schedule-btn.loading {
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
@@ -572,11 +596,8 @@
     </style>
 </head>
 <body>
-    <!-- Calendly link widget begin -->
-    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
-    <button class="schedule-btn" onclick="openCalendly()">SCHEDULE</button>
-    <!-- Calendly link widget end -->
+    <!-- Calendly (lazy-loaded on first click) -->
+    <button id="scheduleBtn" class="schedule-btn" onclick="openCalendly()"><span class="dot"></span><span class="btn-text">SCHEDULE</span><span class="spinner" style="display:none" aria-hidden="true"></span></button>
 
     <div id="smooth-wrapper">
     <header>
@@ -755,14 +776,80 @@
         // Keep header fade updated on the animation loop as well
         setInterval(updateHeaderFade, 60);
 
-            // Calendly Popup Integration
+            // Calendly lazy-load + popup
             function openCalendly() {
-                Calendly.initPopupWidget({
-                    url: 'https://calendly.com/ascensionphotography12',
-                    color: '#000000',
-                    text: 'Schedule time with me',
-                    branding: false
-                });
+                const btn = document.getElementById('scheduleBtn');
+                const spinner = btn.querySelector('.spinner');
+
+                // If Calendly is already loaded, open immediately
+                if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+                    window.Calendly.initPopupWidget({ url: 'https://calendly.com/ascensionphotography12', color: '#000000', text: 'Schedule time with me', branding: false });
+                    return false;
+                }
+
+                // Show spinner/disabled state
+                btn.classList.add('loading');
+                spinner.style.display = 'inline-block';
+
+                // Dynamically load Calendly CSS and script (only once)
+                const loadCss = () => {
+                    if (document.querySelector('link[data-calendly="1"]')) return Promise.resolve();
+                    return new Promise((resolve) => {
+                        const l = document.createElement('link');
+                        l.rel = 'stylesheet';
+                        l.href = 'https://assets.calendly.com/assets/external/widget.css';
+                        l.setAttribute('data-calendly', '1');
+                        l.onload = () => resolve();
+                        l.onerror = () => resolve();
+                        document.head.appendChild(l);
+                    });
+                };
+
+                const loadScript = () => {
+                    if (document.querySelector('script[data-calendly="1"]')) return Promise.resolve();
+                    return new Promise((resolve, reject) => {
+                        const s = document.createElement('script');
+                        s.src = 'https://assets.calendly.com/assets/external/widget.js';
+                        s.async = true;
+                        s.setAttribute('data-calendly', '1');
+                        s.onload = () => resolve();
+                        s.onerror = () => reject(new Error('Calendly script failed to load'));
+                        document.body.appendChild(s);
+                    });
+                };
+
+                // Timeout to give user feedback if CDN is slow
+                const timeoutMs = 12000; // 12s
+                let timedOut = false;
+                const timeout = setTimeout(() => {
+                    timedOut = true;
+                    spinner.style.display = 'none';
+                    btn.classList.remove('loading');
+                    alert('Calendly is taking too long to load. Please try again or use the contact form.');
+                }, timeoutMs);
+
+                // Load assets then open popup
+                Promise.resolve()
+                    .then(loadCss)
+                    .then(loadScript)
+                    .then(() => {
+                        if (timedOut) return;
+                        clearTimeout(timeout);
+                        spinner.style.display = 'none';
+                        btn.classList.remove('loading');
+                        if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+                            window.Calendly.initPopupWidget({ url: 'https://calendly.com/ascensionphotography12', color: '#000000', text: 'Schedule time with me', branding: false });
+                        } else {
+                            alert('Could not initialize Calendly. Please try again later.');
+                        }
+                    }).catch((err) => {
+                        clearTimeout(timeout);
+                        spinner.style.display = 'none';
+                        btn.classList.remove('loading');
+                        console.error('Calendly load error', err);
+                        alert('Failed to load scheduling widget. Please try again later.');
+                    });
+
                 return false;
             }
     </script>
